@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -21,18 +20,19 @@ func getLocalVer(pkgName string) (string, error) {
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
-	defer func() {
-		if err := cmd.Wait(); err != nil {
-			log.Fatalf("%#v\n", err)
-		}
-	}()
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		text := scanner.Text()
 		if strings.HasPrefix(text, "Version") {
 			ver := strings.TrimSpace(text[strings.Index(text, ":")+1:])
+			if err := cmd.Wait(); err != nil {
+				return "", fmt.Errorf("%w", err)
+			}
 			return ver, nil
 		}
+	}
+	if err := cmd.Wait(); err != nil {
+		return "", fmt.Errorf("%w", err)
 	}
 	return "", errors.New("Cannot get package local version.")
 }
