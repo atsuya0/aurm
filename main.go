@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"os/exec"
 	"strings"
 )
 
@@ -23,7 +25,13 @@ func fetchPkgIfNeeded() error {
 	}
 	for _, pkg := range pkgs {
 		localVer, err := getLocalVer(pkg)
-		if err != nil {
+		exitError := &exec.ExitError{}
+		if errors.As(err, &exitError) {
+			if err := fetchPkg(pkg); err != nil {
+				return fmt.Errorf("%w", err)
+			}
+			continue
+		} else if err != nil {
 			return fmt.Errorf("%w", err)
 		}
 		remoteVer, err := fetchRemoteVer(pkg)
