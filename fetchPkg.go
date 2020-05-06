@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +23,9 @@ func fetchPkg(pkgName string) error {
 			log.Fatalf("%+v\n", err)
 		}
 	}()
+	if res.StatusCode == http.StatusNotFound {
+		return errors.New(res.Status)
+	}
 
 	gzipReader, err := gzip.NewReader(res.Body)
 	if err != nil {
