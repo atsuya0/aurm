@@ -1,9 +1,10 @@
-.PHONY: build install
+.PHONY: build install format
 
-build:
-	@goimports -w .
+build: format
 	@go build
 
 install:
-	@goimports -w .
 	@go install
+
+format:
+	@goimports -w .
