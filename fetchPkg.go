@@ -40,7 +40,7 @@ func fetchPkg(pkgName string) error {
 	tarReader := tar.NewReader(gzipReader)
 	for {
 		header, err := tarReader.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		} else if err != nil {
 			return fmt.Errorf("%w", err)
