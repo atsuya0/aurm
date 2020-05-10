@@ -4,7 +4,7 @@ https://wiki.archlinux.org/index.php/Arch_User_Repository
 # Usage
 ```
 $ mkdir -p ~/.local/share/aurm
-$ echo 'chromium-widevine' > ~/.local/share/aurm/list.txt
+$ echo 'chromium-widevine' > ~/.local/share/aurm/packages.txt
 $ aurm
 $ cd chromium-widevine
 $ makepkg -sirc

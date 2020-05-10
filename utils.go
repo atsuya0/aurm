@@ -18,7 +18,7 @@ func getDataPath() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("%w", err)
 		}
-		return filepath.Join(userHomeDir, ".local/share/aurm/list.txt"), nil
+		return filepath.Join(userHomeDir, ".local/share/aurm/packages.txt"), nil
 	}
-	return filepath.Join(dataPath, "aurm/list.txt"), nil
+	return filepath.Join(dataPath, "aurm/packages.txt"), nil
 }
