@@ -2,24 +2,17 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"os/exec"
-	"strings"
 )
 
-func list() error {
-	pkgs, err := getPkgNames()
-	if err != nil {
-		return fmt.Errorf("%w", err)
-	}
-	fmt.Println(strings.Join(pkgs, "\n"))
-	return nil
-}
+const (
+	aurHost = "https://aur.archlinux.org"
+)
 
 func fetchPkgIfNeeded() error {
-	pkgs, err := getPkgNames()
+	pkgs, err := getForeignPkgNames()
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -48,14 +41,6 @@ func fetchPkgIfNeeded() error {
 }
 
 func main() {
-	var l = flag.Bool("l", false, "list")
-	flag.Parse()
-	if *l {
-		if err := list(); err != nil {
-			log.Fatalf("%+v\n", err)
-		}
-		return
-	}
 	if err := fetchPkgIfNeeded(); err != nil {
 		log.Fatalf("%+v\n", err)
 	}

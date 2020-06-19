@@ -3,9 +3,8 @@ Download the build files if you have not already installed it, or if the package
 https://wiki.archlinux.org/index.php/Arch_User_Repository
 # Usage
 ```
-$ mkdir -p ~/.local/share/aurm
-$ echo 'chromium-widevine' > ~/.local/share/aurm/packages.txt
+$ sudo pacman -Rsn $(pacman -Qdmq) // If you have not removed the orphan package.
 $ aurm
-$ cd chromium-widevine
+$ cd ${PACKAGE_NAME}
 $ makepkg -sirc
 ```

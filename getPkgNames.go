@@ -1,30 +1,26 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
-	"log"
-	"os"
+	"os/exec"
+	"strings"
 )
 
-func getPkgNames() ([]string, error) {
-	path, err := getDataPath()
+func getForeignPkgNames() ([]string, error) {
+	cmd := exec.Command("pacman", "-Qmq")
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return make([]string, 0), fmt.Errorf("%w", err)
 	}
-	fp, err := os.Open(path)
-	if err != nil {
+
+	if err := cmd.Start(); err != nil {
 		return make([]string, 0), fmt.Errorf("%w", err)
 	}
-	defer func() {
-		if err = fp.Close(); err != nil {
-			log.Fatalf("%+v\n", err)
-		}
-	}()
-	scanner := bufio.NewScanner(fp)
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(stdout)
+	if err := cmd.Wait(); err != nil {
+		return make([]string, 0), fmt.Errorf("%w", err)
 	}
-	return lines, nil
+	return strings.Split(strings.TrimSpace(buf.String()), "\n"), nil
 }

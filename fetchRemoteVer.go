@@ -1,23 +1,23 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"path"
-	"strings"
 )
 
-const (
-	ver = "pkgver="
-	rel = "pkgrel="
-)
+type pkg struct {
+	Results []struct {
+		Version string `json:"Version"`
+	} `json:"results"`
+}
 
 func fetchRemoteVer(pkgName string) (string, error) {
-	res, err := http.Get(aurHost + path.Join(aurPath, "plain/PKGBUILD?h=") + pkgName)
+	res, err := http.Get(aurHost + "/rpc/?v=5&type=info&arg[]=" + pkgName)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	defer func() {
 		if err = res.Body.Close(); err != nil {
@@ -25,15 +25,17 @@ func fetchRemoteVer(pkgName string) (string, error) {
 		}
 	}()
 
-	scanner := bufio.NewScanner(res.Body)
-	var ver, rel string
-	for scanner.Scan() {
-		text := scanner.Text()
-		if strings.HasPrefix(text, ver) {
-			ver = text[len(ver):]
-		} else if strings.HasPrefix(text, rel) {
-			rel = text[len(rel):]
-		}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
 	}
-	return fmt.Sprintf("%s-%s", ver, rel), nil
+	pkg := pkg{}
+	err = json.Unmarshal(body, &pkg)
+	if err != nil {
+		return "", err
+	}
+	if len(pkg.Results) < 1 {
+		return "", errors.New("Cannot fetch the remote package version")
+	}
+	return pkg.Results[0].Version, nil
 }
