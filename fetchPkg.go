@@ -14,7 +14,7 @@ import (
 
 func fetchPkg(pkgName string) error {
 	fileName := pkgName + ".tar.gz"
-	res, err := http.Get(aurHost + path.Join(aurPath, "snapshot", fileName))
+	res, err := http.Get(aurHost + path.Join("cgit/aur.git/snapshot", fileName))
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
