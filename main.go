@@ -12,27 +12,27 @@ const (
 )
 
 func fetchPkgIfNeeded() error {
-	pkgs, err := getForeignPkgNames()
+	pkgNames, err := getForeignPkgNames()
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	for _, pkg := range pkgs {
-		localVer, err := getLocalVer(pkg)
+	for _, pkgName := range pkgNames {
+		localVer, err := getLocalVer(pkgName)
 		exitError := &exec.ExitError{}
 		if errors.As(err, &exitError) {
-			if err := fetchPkg(pkg); err != nil {
+			if err := fetchPkg(pkgName); err != nil {
 				return fmt.Errorf("%w", err)
 			}
 			continue
 		} else if err != nil {
 			return fmt.Errorf("%w", err)
 		}
-		remoteVer, err := fetchRemoteVer(pkg)
+		remoteVer, err := fetchRemoteVer(pkgName)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
 		if localVer != remoteVer {
-			if err := fetchPkg(pkg); err != nil {
+			if err := fetchPkg(pkgName); err != nil {
 				return fmt.Errorf("%w", err)
 			}
 		}
