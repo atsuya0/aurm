@@ -32,6 +32,7 @@ func fetchPkgIfNeeded() error {
 			return fmt.Errorf("%w", err)
 		}
 		if localVer != remoteVer {
+			fmt.Printf("Download %s\n", pkgName)
 			if err := fetchPkg(pkgName); err != nil {
 				return fmt.Errorf("%w", err)
 			}
