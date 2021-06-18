@@ -24,31 +24,39 @@ func newPkgDownloader() (pkgDownloader, error) {
 	return pkgDownloader{pkgNames: pkgNames}, nil
 }
 
+func (p *pkgDownloader) fetchPkgIfNeeded() error {
+	for _, pkgName := range p.pkgNames {
+		localVer, err := getLocalVer(pkgName)
+		exitError := &exec.ExitError{}
+		if errors.As(err, &exitError) {
+			if err := fetchPkg(pkgName); err != nil {
+				return err
+			}
+			continue
+		} else if err != nil {
+			return err
+		}
+		remoteVer, err := fetchRemoteVer(pkgName)
+		if err != nil {
+			return err
+		}
+		if localVer != remoteVer {
+			fmt.Printf("Download %s\n", pkgName)
+			if err := fetchPkg(pkgName); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func main() {
 	pkgDownloader, err := newPkgDownloader()
 	if err != nil {
 		log.Fatalf("%+v\n", err)
 	}
-	for _, pkgName := range pkgDownloader.pkgNames {
-		localVer, err := getLocalVer(pkgName)
-		exitError := &exec.ExitError{}
-		if errors.As(err, &exitError) {
-			if err := fetchPkg(pkgName); err != nil {
-				log.Fatalf("%+v\n", err)
-			}
-			continue
-		} else if err != nil {
-			log.Fatalf("%+v\n", err)
-		}
-		remoteVer, err := fetchRemoteVer(pkgName)
-		if err != nil {
-			log.Fatalf("%+v\n", err)
-		}
-		if localVer != remoteVer {
-			fmt.Printf("Download %s\n", pkgName)
-			if err := fetchPkg(pkgName); err != nil {
-				log.Fatalf("%+v\n", err)
-			}
-		}
+
+	if pkgDownloader.fetchPkgIfNeeded() != nil {
+		log.Fatalf("%+v\n", err)
 	}
 }
