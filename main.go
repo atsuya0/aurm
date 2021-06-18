@@ -11,38 +11,44 @@ const (
 	aurHost = "https://aur.archlinux.org"
 )
 
-func fetchPkgIfNeeded() error {
+type pkgDownloader struct {
+	pkgNames []string
+}
+
+func newPkgDownloader() (pkgDownloader, error) {
 	pkgNames, err := getForeignPkgNames()
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return pkgDownloader{}, err
 	}
-	for _, pkgName := range pkgNames {
+
+	return pkgDownloader{pkgNames: pkgNames}, nil
+}
+
+func main() {
+	pkgDownloader, err := newPkgDownloader()
+	if err != nil {
+		log.Fatalf("%+v\n", err)
+	}
+	for _, pkgName := range pkgDownloader.pkgNames {
 		localVer, err := getLocalVer(pkgName)
 		exitError := &exec.ExitError{}
 		if errors.As(err, &exitError) {
 			if err := fetchPkg(pkgName); err != nil {
-				return fmt.Errorf("%w", err)
+				log.Fatalf("%+v\n", err)
 			}
 			continue
 		} else if err != nil {
-			return fmt.Errorf("%w", err)
+			log.Fatalf("%+v\n", err)
 		}
 		remoteVer, err := fetchRemoteVer(pkgName)
 		if err != nil {
-			return fmt.Errorf("%w", err)
+			log.Fatalf("%+v\n", err)
 		}
 		if localVer != remoteVer {
 			fmt.Printf("Download %s\n", pkgName)
 			if err := fetchPkg(pkgName); err != nil {
-				return fmt.Errorf("%w", err)
+				log.Fatalf("%+v\n", err)
 			}
 		}
-	}
-	return nil
-}
-
-func main() {
-	if err := fetchPkgIfNeeded(); err != nil {
-		log.Fatalf("%+v\n", err)
 	}
 }
