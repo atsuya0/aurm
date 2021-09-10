@@ -1,5 +1,5 @@
 # aurm
-This is a tool for Arch Linux.  
+This tool is for Arch Linux.  
 Arch Linux is an independently developed, x86-64 general-purpose GNU/Linux distribution that strives to provide the latest stable versions of most software by following a rolling-release model.  
 https://wiki.archlinux.org/title/Arch_Linux  
 (https://wiki.archlinux.jp/index.php/Arch_Linux)
