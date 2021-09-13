@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -114,7 +113,7 @@ type pkg struct {
 	} `json:"results"`
 }
 
-func (p *pkgDownloader) fetchRemoteVer(pkgName string) (string, error) {
+func (p *pkgDownloader) fetchRemoteVer(pkgName string) (ver string, err error) {
 	errMsg := "Failed to fetch the package remote version"
 
 	res, err := http.Get(aurHost + "/rpc/?v=5&type=info&arg[]=" + pkgName)
@@ -122,8 +121,8 @@ func (p *pkgDownloader) fetchRemoteVer(pkgName string) (string, error) {
 		return "", fmt.Errorf(errMsg+": %w", err)
 	}
 	defer func() {
-		if err = res.Body.Close(); err != nil {
-			log.Fatalf("%+v\n", err)
+		if deferErr := res.Body.Close(); deferErr != nil {
+			err = fmt.Errorf(errMsg+": %w", deferErr)
 		}
 	}()
 
@@ -142,7 +141,7 @@ func (p *pkgDownloader) fetchRemoteVer(pkgName string) (string, error) {
 	return pkg.Results[0].Version, nil
 }
 
-func (p *pkgDownloader) fetchPkg(pkgName string) error {
+func (p *pkgDownloader) fetchPkg(pkgName string) (err error) {
 	errMsg := "Failed to fetch the package: %w"
 
 	fileName := pkgName + ".tar.gz"
@@ -151,8 +150,8 @@ func (p *pkgDownloader) fetchPkg(pkgName string) error {
 		return fmt.Errorf(errMsg, err)
 	}
 	defer func() {
-		if err = res.Body.Close(); err != nil {
-			log.Fatalf("%+v\n", err)
+		if deferErr := res.Body.Close(); deferErr != nil {
+			err = fmt.Errorf(errMsg, err)
 		}
 	}()
 	if res.StatusCode == http.StatusNotFound {
@@ -164,8 +163,8 @@ func (p *pkgDownloader) fetchPkg(pkgName string) error {
 		return fmt.Errorf(errMsg, err)
 	}
 	defer func() {
-		if err = gzipReader.Close(); err != nil {
-			log.Fatalf("%+v\n", err)
+		if deferErr := gzipReader.Close(); deferErr != nil {
+			err = fmt.Errorf(errMsg, err)
 		}
 	}()
 
@@ -188,8 +187,8 @@ func (p *pkgDownloader) fetchPkg(pkgName string) error {
 				return fmt.Errorf(errMsg, err)
 			}
 			defer func() {
-				if err = newFile.Close(); err != nil {
-					log.Fatalf("%+v\n", err)
+				if deferErr := newFile.Close(); deferErr != nil {
+					err = fmt.Errorf(errMsg, err)
 				}
 			}()
 			if _, err := io.Copy(newFile, tarReader); err != nil {
