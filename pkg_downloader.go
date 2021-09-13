@@ -155,7 +155,7 @@ func (p *pkgDownloader) fetchPkg(pkgName string) (err error) {
 		}
 	}()
 	if res.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("%w", errors.New(res.Status))
+		return fmt.Errorf(errMsg, errors.New(res.Status))
 	}
 
 	gzipReader, err := gzip.NewReader(res.Body)
