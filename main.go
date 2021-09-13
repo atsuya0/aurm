@@ -8,6 +8,10 @@ const (
 	aurHost = "https://aur.archlinux.org"
 )
 
+func init() {
+	log.SetFlags(log.Llongfile)
+}
+
 func main() {
 	pkgDownloader, err := newPkgDownloader()
 	if err != nil {
